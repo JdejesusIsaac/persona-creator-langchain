@@ -109,6 +109,37 @@ export function PersonaGeneration({ userId, roleInsightId, insights, onBack }: P
     );
   }
 
+  const chatgptSteps = [
+    "Go to ChatGPT (https://chat.openai.com)",
+    "Click your profile icon (bottom left)",
+    "Select \"Settings\"",
+    "Navigate to \"Personalization\"",
+    "Scroll to \"Custom Instructions\"",
+    "Copy ALL text above this line",
+    "Paste into the \"How would you like ChatGPT to respond?\" field",
+    "Click \"Save\"",
+  ];
+
+  const topResponsibilities: string[] = (insights.core_responsibilities ?? []).filter(Boolean).slice(0, 3);
+  const usageBestFor = topResponsibilities.length
+    ? topResponsibilities
+    : [
+        "Summarizing key responsibilities",
+        "Prioritizing competing initiatives",
+        "Drafting stakeholder communications",
+      ];
+
+  const examplePrompts = [
+    `\"Review this [document/code/strategy] for a ${insights.role_title}\"`,
+    `\"Help me prioritize these [tasks/features/initiatives]\"`,
+    `\"Draft a [email/spec/report] about [topic]\"`,
+    `\"What's the best approach to [specific ${insights.role_title} challenge]?\"`,
+  ];
+
+  if ((insights.tools_technologies ?? []).length > 0) {
+    examplePrompts.push(`\"Help me with [tool: ${insights.tools_technologies[0]}] workflow\"`);
+  }
+
   return (
     <Card className="p-6">
       <h2 className="text-2xl font-bold mb-4">✨ Your Persona is Ready!</h2>
@@ -182,12 +213,42 @@ export function PersonaGeneration({ userId, roleInsightId, insights, onBack }: P
         )}
       </Tabs>
 
-      <div className="mt-6 p-4 bg-blue-50 rounded">
-        <h4 className="font-semibold mb-2">How to Use:</h4>
-        <ul className="text-sm space-y-1 text-gray-700">
-          <li>• ChatGPT: Settings → Personalization → Custom Instructions</li>
-          <li>• Claude: Create Project → Add to Project Knowledge</li>
-        </ul>
+      <div className="mt-6 p-4 bg-blue-50 rounded space-y-4 text-sm text-gray-700">
+        <div>
+          <h4 className="font-semibold mb-2">ChatGPT Setup</h4>
+          <ol className="list-decimal list-inside space-y-1">
+            {chatgptSteps.map((step, index) => (
+              <li key={index}>{step}</li>
+            ))}
+          </ol>
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-1">Usage Tips</h4>
+          <p className="font-medium">Best For:</p>
+          <ul className="list-disc list-inside space-y-1 mb-2">
+            {usageBestFor.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+
+          <p className="font-medium">Example Prompts to Try:</p>
+          <ul className="list-disc list-inside space-y-1 mb-2">
+            {examplePrompts.map((prompt, index) => (
+              <li key={index}>{prompt}</li>
+            ))}
+          </ul>
+
+          <p className="italic">Note: These instructions work best when you provide context about your specific situation, constraints, and goals.</p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold mb-1">Claude Setup</h4>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Create a Claude Project</li>
+            <li>Add this file to Project Knowledge</li>
+          </ul>
+        </div>
       </div>
 
       <Button variant="outline" onClick={() => window.location.reload()} className="mt-4 w-full">
