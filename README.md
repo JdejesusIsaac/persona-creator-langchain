@@ -160,18 +160,7 @@ The Universal Persona Creator extends the base LangChain + Next.js starter into 
   - `InsightsReview.tsx` surfaces extraction results with detailed error diagnostics and retry controls.
 
 ## Setup
-
-1. **Clone & Install**
-   ```bash
-   git clone <repo>
-   cd langchain-nextjs-template
-   npm install
-   ```
-2. **Environment variables (`.env.local`)**
-   - `OPENAI_API_KEY`
-   - `SUPABASE_URL`
-   - `SUPABASE_PRIVATE_KEY`
-   - Optional: `ANTHROPIC_API_KEY` for Claude output.
+=
 3. **Supabase schema**
    Ensure the following tables exist with JSONB columns where noted:
    - `documents` (vector store backing table).
