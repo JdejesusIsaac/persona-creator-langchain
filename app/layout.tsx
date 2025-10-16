@@ -81,6 +81,7 @@ export default function RootLayout({
                   <ActiveLink href="/retrieval_agents">
                     🤖 Retrieval Agents
                   </ActiveLink>
+                  <ActiveLink href="/persona">✨ Persona Builder</ActiveLink>
                   <ActiveLink href="/ai_sdk">
                     🌊 React Server Components
                   </ActiveLink>
