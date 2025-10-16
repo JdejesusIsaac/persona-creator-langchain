@@ -13,20 +13,46 @@ interface RoleInsights {
     hiring_signals: string[];
     key_success_metrics: string[];
     collaboration_aspects: string[];
+    about_section?: string[];
+    responsibilities_section?: string[];
+    qualifications_section?: string[];
   }
   
   export function generateChatGPTInstructions(insights: RoleInsights): string {
-    const technicalSkills = insights.required_skills.technical.slice(0, 8).join(', ');
-    const softSkills = insights.required_skills.soft_skills.slice(0, 5).join(', ');
-    const topTools = insights.tools_technologies.slice(0, 6).join(', ');
-    const topResponsibilities = insights.core_responsibilities.slice(0, 6);
-    const topSignals = insights.hiring_signals.slice(0, 4);
-    const topMetrics = insights.key_success_metrics.slice(0, 4);
-  
+    const {
+      about_section = [],
+      responsibilities_section = [],
+      qualifications_section = [],
+      required_skills,
+      tools_technologies,
+      core_responsibilities,
+      hiring_signals,
+      key_success_metrics,
+      collaboration_aspects,
+    } = insights;
+
+    const technicalSkills = (required_skills?.technical ?? []).slice(0, 8).join(', ');
+    const softSkills = (required_skills?.soft_skills ?? []).slice(0, 5).join(', ');
+    const topTools = (tools_technologies ?? []).slice(0, 6).join(', ');
+    const topResponsibilities = (core_responsibilities ?? []).slice(0, 6);
+    const topSignals = (hiring_signals ?? []).slice(0, 4);
+    const topMetrics = (key_success_metrics ?? []).slice(0, 4);
+
     return `###IDENTITY###
   
   You are a ${insights.seniority_level} ${insights.role_title} working in ${insights.industry_context}.
   
+  ###ROLE CONTEXT###
+
+  **About the Role:**
+  ${about_section.length ? about_section.map((p: string) => p).join('\n\n') : "- Not specified in posting"}
+
+  **Key Responsibilities:**
+  ${responsibilities_section.length ? responsibilities_section.map((r: string) => `- ${r}`).join('\n') : "- Not specified in posting"}
+
+  **Required Qualifications:**
+  ${qualifications_section.length ? qualifications_section.map((q: string) => `- ${q}`).join('\n') : "- Not specified in posting"}
+
   ###EXPERTISE###
   
   **Core Skills:**

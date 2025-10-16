@@ -13,14 +13,29 @@ interface RoleInsights {
     hiring_signals: string[];
     key_success_metrics: string[];
     collaboration_aspects: string[];
+    about_section?: string[];
+    responsibilities_section?: string[];
+    qualifications_section?: string[];
   }
   
   export function generateClaudeCommandSuite(insights: RoleInsights): string {
-    const technicalSkills = insights.required_skills.technical.slice(0, 8);
-    const softSkills = insights.required_skills.soft_skills.slice(0, 5);
-    const topTools = insights.tools_technologies.slice(0, 6);
-    const topResponsibilities = insights.core_responsibilities.slice(0, 8);
-    const topSignals = insights.hiring_signals.slice(0, 4);
+    const {
+      about_section = [],
+      responsibilities_section = [],
+      qualifications_section = [],
+      required_skills,
+      tools_technologies,
+      core_responsibilities,
+      hiring_signals,
+      key_success_metrics,
+      collaboration_aspects,
+    } = insights;
+
+    const technicalSkills = (required_skills?.technical ?? []).slice(0, 8);
+    const softSkills = (required_skills?.soft_skills ?? []).slice(0, 5);
+    const topTools = (tools_technologies ?? []).slice(0, 6);
+    const topResponsibilities = (core_responsibilities ?? []).slice(0, 8);
+    const topSignals = (hiring_signals ?? []).slice(0, 4);
     
     // Generate role-specific command categories
     const commandCategories = generateCommandCategories(insights);
@@ -30,6 +45,19 @@ interface RoleInsights {
   **Professional Context:** ${insights.seniority_level} ${insights.role_title} specializing in ${insights.industry_context}
   
   **Core Expertise:** ${technicalSkills.slice(0, 3).join(', ')}
+  
+  ---
+  
+  ## 📋 Role Overview
+  
+  ### About the Role
+  ${about_section.length ? about_section.join('\n\n') : 'Not specified in posting'}
+  
+  ### Core Responsibilities
+  ${responsibilities_section.length ? responsibilities_section.map((r: string) => `- ${r}`).join('\n') : '- Not specified in posting'}
+  
+  ### Required Qualifications
+  ${qualifications_section.length ? qualifications_section.map((q: string) => `- ${q}`).join('\n') : '- Not specified in posting'}
   
   ---
   
@@ -59,7 +87,7 @@ interface RoleInsights {
   ${topSignals.map(s => `- ${s}`).join('\n')}
   
   ### Success Metrics
-  ${insights.key_success_metrics.map(m => `- ${m}`).join('\n')}
+  ${(key_success_metrics ?? []).map(m => `- ${m}`).join('\n')}
   
   ---
   
@@ -143,10 +171,10 @@ interface RoleInsights {
   - Reference the ${topTools[0]} documentation when needed
   - Follow ${insights.industry_context} best practices
   - Apply ${insights.seniority_level}-level thinking and judgment
-  - Consider ${insights.collaboration_aspects[0] || 'cross-functional collaboration'}
+  - Consider ${(collaboration_aspects ?? [])[0] || 'cross-functional collaboration'}
   
   **Tool-Specific Guidance:**
-  ${topTools.slice(0, 3).map(tool => `- **${tool}**: Use for ${getRoleSpecificToolUsage(tool, insights.role_title)}`).join('\n')}
+  ${topTools.slice(0, 3).map((tool: string) => `- **${tool}**: Use for ${getRoleSpecificToolUsage(tool, insights.role_title)}`).join('\n')}
   
   ---
   

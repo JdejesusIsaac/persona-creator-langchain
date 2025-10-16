@@ -94,68 +94,128 @@ export function InsightsReview({ userId, jobPostingId, onSuccess, onBack }: Prop
 
   return (
     <Card className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Step 2: Review Extracted Insights</h2>
+      <h2 className="text-2xl font-bold mb-4">Step 2: Review Extracted Information</h2>
       
       <div className="space-y-6">
-        <Section title="Role Information">
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+          <h3 className="text-lg font-bold mb-2 text-blue-900">📄 Extracted Sections</h3>
+          <p className="text-sm text-blue-700 mb-4">
+            These sections were extracted verbatim from the job posting
+          </p>
+
+          <Section title="About the Job" icon="🏢">
+            {insights.about_section?.length ? (
+              <div className="space-y-2">
+                {insights.about_section.map((paragraph: string, i: number) => (
+                  <p key={i} className="text-gray-700 leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">Not found in posting</p>
+            )}
+          </Section>
+
+          <Section title="Responsibilities" icon="✅" className="mt-4">
+            {insights.responsibilities_section?.length ? (
+              <ul className="list-disc list-inside space-y-1">
+                {insights.responsibilities_section.map((item: string, i: number) => (
+                  <li key={i} className="text-gray-700">{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 italic">Not found in posting</p>
+            )}
+          </Section>
+
+          <Section title="Qualifications" icon="🎓" className="mt-4">
+            {insights.qualifications_section?.length ? (
+              <ul className="list-disc list-inside space-y-1">
+                {insights.qualifications_section.map((item: string, i: number) => (
+                  <li key={i} className="text-gray-700">{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500 italic">Not found in posting</p>
+            )}
+          </Section>
+        </div>
+
+        <Section title="Role Information" icon="💼">
           <InfoItem label="Title" value={insights.role_title} />
           <InfoItem label="Level" value={insights.seniority_level} />
           <InfoItem label="Industry" value={insights.industry_context} />
         </Section>
 
-        <Section title={`Core Responsibilities (${insights.core_responsibilities?.length || 0})`}>
-          <ul className="list-disc list-inside space-y-1">
-            {insights.core_responsibilities?.map((r: string, i: number) => (
-              <li key={i} className="text-gray-700">{r}</li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section title="Required Skills">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-medium mb-2">Technical Skills:</h4>
-              <ul className="list-disc list-inside">
-                {insights.required_skills?.technical?.map((s: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-700">{s}</li>
+        <details className="border rounded-lg">
+          <summary className="p-4 cursor-pointer font-semibold bg-gray-50 hover:bg-gray-100">
+            📊 Detailed Analysis (Click to expand)
+          </summary>
+          <div className="p-4 space-y-4">
+            <Section title={`Key Responsibilities (${insights.core_responsibilities?.length || 0})`}>
+              <ul className="list-disc list-inside space-y-1">
+                {insights.core_responsibilities?.map((r: string, i: number) => (
+                  <li key={i} className="text-gray-700">{r}</li>
                 ))}
               </ul>
-            </div>
-            <div>
-              <h4 className="font-medium mb-2">Soft Skills:</h4>
-              <ul className="list-disc list-inside">
-                {insights.required_skills?.soft_skills?.map((s: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-700">{s}</li>
+            </Section>
+
+            <Section title="Required Skills">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium mb-2">Technical:</h4>
+                  <ul className="list-disc list-inside">
+                    {insights.required_skills?.technical?.map((s: string, i: number) => (
+                      <li key={i} className="text-sm text-gray-700">{s}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-medium mb-2">Soft Skills:</h4>
+                  <ul className="list-disc list-inside">
+                    {insights.required_skills?.soft_skills?.map((s: string, i: number) => (
+                      <li key={i} className="text-sm text-gray-700">{s}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Section>
+
+            <Section title={`Tools & Technologies (${insights.tools_technologies?.length || 0})`}>
+              <div className="flex flex-wrap gap-2">
+                {insights.tools_technologies?.map((t: string, i: number) => (
+                  <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </Section>
+
+            <Section title="What Employers Value">
+              <ul className="list-disc list-inside space-y-1">
+                {insights.hiring_signals?.map((s: string, i: number) => (
+                  <li key={i} className="text-gray-700">{s}</li>
                 ))}
               </ul>
-            </div>
-          </div>
-        </Section>
+            </Section>
 
-        <Section title={`Tools & Technologies (${insights.tools_technologies?.length || 0})`}>
-          <div className="flex flex-wrap gap-2">
-            {insights.tools_technologies?.map((t: string, i: number) => (
-              <span key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                {t}
-              </span>
-            ))}
+            <Section title="Collaboration">
+              <ul className="list-disc list-inside space-y-1">
+                {insights.collaboration_aspects?.map((c: string, i: number) => (
+                  <li key={i} className="text-gray-700">{c}</li>
+                ))}
+              </ul>
+            </Section>
           </div>
-        </Section>
-
-        <Section title="What Employers Value">
-          <ul className="list-disc list-inside space-y-1">
-            {insights.hiring_signals?.map((s: string, i: number) => (
-              <li key={i} className="text-gray-700">{s}</li>
-            ))}
-          </ul>
-        </Section>
+        </details>
       </div>
 
       <div className="flex gap-2 mt-6">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button 
+        <Button
           onClick={() => roleInsightId && onSuccess(roleInsightId, insights)}
           disabled={!roleInsightId}
           className="flex-1"
@@ -167,10 +227,23 @@ export function InsightsReview({ userId, jobPostingId, onSuccess, onBack }: Prop
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  icon,
+  children,
+  className = "",
+}: {
+  title: string;
+  icon?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="border-l-4 border-blue-600 pl-4">
-      <h3 className="font-semibold text-lg mb-2">{title}</h3>
+    <div className={`border-l-4 border-blue-600 pl-4 ${className}`}>
+      <h3 className="font-semibold text-lg mb-2">
+        {icon && <span className="mr-2">{icon}</span>}
+        {title}
+      </h3>
       {children}
     </div>
   );

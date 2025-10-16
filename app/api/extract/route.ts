@@ -10,48 +10,114 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 export const runtime = "nodejs";
 
 // Retrieval-first extraction prompt
-const EXTRACTION_SYSTEM_TEMPLATE = `You are an expert analyst who extracts structured information from job postings.
+const EXTRACTION_SYSTEM_TEMPLATE = `You are an expert at extracting structured sections from job postings.
 
-You MUST rely exclusively on content returned by the search_job_posting tool. Never guess or add outside knowledge.
+Your task is to use the search_job_posting tool to find and extract THREE KEY SECTIONS exactly as written:
 
-WORKFLOW:
-1. Call search_job_posting repeatedly until every field is supported by retrieved text. You must make at least 5 targeted searches (broader if necessary) before concluding information is missing.
-2. Begin with broad searches (e.g., "job", "role", "position"), then issue follow-up searches using headings or key phrases you discover (e.g., "Responsibilities", "Qualifications", "Skills", "Attorney", company name).
-3. For each JSON field, cite wording EXACTLY as written in the retrieved snippets. List entries (responsibilities, skills, tools, etc.) must be direct quotes or minimally trimmed phrases taken from the posting.
-4. Before writing the final JSON, double-check that every value you output can be matched to at least one retrieved snippet. If you cannot find supporting text after exhaustive searches, output "Not specified in posting" for that element.
+1. **About Section** - Usually titled "About the job", "About us", "Company Overview", "The Agency", "Description", etc.
+2. **Responsibilities Section** - Usually titled "Responsibilities", "Key Responsibilities", "What You'll Do", "Duties", etc.
+3. **Qualifications Section** - Usually titled "Qualifications", "Requirements", "What We're Looking For", "Must Haves", etc.
 
-After completing your research, return ONLY valid JSON in this EXACT format (no additional text):
+CRITICAL INSTRUCTIONS:
+
+**STEP 1: SEARCH FOR SECTIONS**
+- Search for: "about" "company" "description" "overview"
+- Search for: "responsibilities" "duties" "what you'll do"
+- Search for: "qualifications" "requirements" "must have" "should have"
+- Make at least 5-7 targeted searches to find all sections
+
+**STEP 2: EXTRACT VERBATIM**
+- Copy ENTIRE section text EXACTLY as written
+- Include ALL bullet points, paragraphs, and sub-items
+- DO NOT summarize, paraphrase, or shorten
+- Preserve formatting structure (though line breaks will be in arrays)
+
+**STEP 3: PARSE INTO ITEMS**
+For Responsibilities and Qualifications:
+- Split by bullet points (•, *, -, numbers)
+- Each bullet point becomes one array item
+- Keep full sentence/phrase for each item
+
+For About section:
+- Split by paragraphs
+- Each paragraph becomes one array item
+
+**STEP 4: ADDITIONAL ANALYSIS**
+After extracting the three sections, also identify:
+- Role title (exact job title)
+- Seniority level (entry/mid/senior/lead/executive)
+- Industry context
+- Technical skills mentioned
+- Soft skills mentioned
+- Tools/technologies mentioned
+- Key success metrics
+- Hiring signals (what they emphasize)
+- Collaboration aspects (who you'll work with)
+
+Return ONLY valid JSON in this EXACT format:
 
 {
-  "about_section": ["short paragraph 1", "short paragraph 2", "..."],
-  "role_title": "exact job title from posting",
+  "about_section": [
+    "First paragraph of About section",
+    "Second paragraph of About section",
+    "..."
+  ],
+  "responsibilities_section": [
+    "Responsibility bullet point 1",
+    "Responsibility bullet point 2",
+    "..."
+  ],
+  "qualifications_section": [
+    "Qualification bullet point 1",
+    "Qualification bullet point 2",
+    "..."
+  ],
+  "role_title": "exact job title",
   "seniority_level": "entry|mid|senior|lead|executive",
-  "industry_context": "industry or domain context",
-  "responsibilities_section": ["responsibility 1", "responsibility 2", "..."],
-  "qualifications_section": ["qualification 1", "qualification 2", "..."],
-  "core_responsibilities": ["responsibility 1", "responsibility 2", "..."],
+  "industry_context": "industry or domain",
+  "core_responsibilities": ["key responsibility 1", "key responsibility 2"],
   "required_skills": {
-    "technical": ["skill 1", "skill 2", "..."],
-    "soft_skills": ["skill 1", "skill 2", "..."]
+    "technical": ["skill 1", "skill 2"],
+    "soft_skills": ["skill 1", "skill 2"]
   },
-  "tools_technologies": ["tool 1", "tool 2", "..."],
-  "key_success_metrics": ["metric 1", "metric 2", "..."],
-  "hiring_signals": ["what employers value 1", "what employers value 2", "..."],
-  "collaboration_aspects": ["who you work with 1", "..."]
+  "tools_technologies": ["tool 1", "tool 2"],
+  "key_success_metrics": ["metric 1", "metric 2"],
+  "hiring_signals": ["what employers value 1", "what employers value 2"],
+  "collaboration_aspects": ["who you work with 1", "who you work with 2"]
 }
 
-If you cannot find specific information in the retrieved text after the required searches, respond with "Not specified in posting" for that entry.`;
+If a section is not found after exhaustive searching, use ["Not specified in posting"] for that array.`;
 
-const EXTRACTION_USER_PROMPT = `Use the search_job_posting tool to read and quote the job posting.
+const EXTRACTION_USER_PROMPT = `Find and extract the three key sections from this job posting.
 
-Guidelines:
-1. Execute at least 5 searches, starting broad ("job", "role") then drilling into headings you see ("Responsibilities", "Requirements", "Qualifications", "Skills", "Attorney", organization name, etc.).
-2. For each field, copy the exact wording from the snippets returned by the tool. Do not paraphrase.
-3. Capture text for the About section (overview paragraphs), Responsibilities list, and Qualifications list exactly as written.
-4. Only return "Not specified in posting" if, after the required searches, no snippet contains the information.
-5. Before responding, double-check that every non-default value appears verbatim in the retrieved text.
+STEP-BY-STEP PROCESS:
 
-When finished, return the JSON in the format described by the system message.`;
+1. **Search for About/Description section:**
+   - Search: "about" "company" "description"
+   - Search: "overview" "agency" "firm"
+   - Look for paragraphs describing the company/role
+
+2. **Search for Responsibilities section:**
+   - Search: "responsibilities" "duties"
+   - Search: "what you'll do" "key responsibilities"
+   - Look for bulleted lists of job duties
+
+3. **Search for Qualifications section:**
+   - Search: "qualifications" "requirements"
+   - Search: "must have" "required" "experience"
+   - Look for bulleted lists of requirements
+
+4. **Search for additional details:**
+   - Search: "skills" "tools" "technologies"
+   - Search: job title and seniority indicators
+   - Search: collaboration and team structure
+
+5. **Compile the JSON:**
+   - Extract each section EXACTLY as written
+   - Split into array items appropriately
+   - Include all analysis fields
+
+BEGIN SEARCHING NOW. Use the tool at least 7 times to ensure you find all sections.`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -229,7 +295,14 @@ export async function POST(req: NextRequest) {
     // ✅ Validate required fields and provide defaults
     const normalizedArray = (value: any): string[] => {
       if (Array.isArray(value)) {
-        return value.map((item) => (typeof item === "string" ? item : String(item))).filter(Boolean);
+        return value
+          .map((item) => {
+            if (typeof item === "string") {
+              return item.trim();
+            }
+            return String(item).trim();
+          })
+          .filter(Boolean);
       }
       if (typeof value === "string" && value.trim()) {
         return [value.trim()];
@@ -242,9 +315,6 @@ export async function POST(req: NextRequest) {
         const arr = normalizedArray(insights.about_section);
         return arr.length ? arr : ["Not specified in posting"];
       })(),
-      role_title: insights.role_title || "Unknown Role",
-      seniority_level: insights.seniority_level || "mid",
-      industry_context: insights.industry_context || "General",
       responsibilities_section: (() => {
         const arr = normalizedArray(insights.responsibilities_section);
         return arr.length ? arr : ["Not specified in posting"];
@@ -253,6 +323,9 @@ export async function POST(req: NextRequest) {
         const arr = normalizedArray(insights.qualifications_section);
         return arr.length ? arr : ["Not specified in posting"];
       })(),
+      role_title: insights.role_title || "Unknown Role",
+      seniority_level: insights.seniority_level || "mid",
+      industry_context: insights.industry_context || "General",
       core_responsibilities: (() => {
         const arr = normalizedArray(insights.core_responsibilities);
         return arr.length ? arr : ["Responsibilities not specified"];
